@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <!-- エラーキャプチャライブラリを読み込み -->
+    <script src="../js/client-error-capture.js"></script>
+
+    <script>
+      // ClientErrorCaptureライブラリの初期化
+      document.addEventListener("DOMContentLoaded", function () {
+        try {
+          // ライブラリの初期化
+          ClientErrorCapture.init({
+            logToConsole: true, // コンソールにエラーを出力
+            logToServer: true, // サーバーにエラーログを送信
+            logServerUrl: "http://127.0.0.1:54321/functions/v1/error_logs", // ログサーバーのURL（実際の環境に合わせて変更）
+            appName: "ErrorSampleApp", // アプリケーション名
+            environment: "local", // 環境設定
+            version: "1.0.0", // アプリバージョン
+            maxStackLength: 1000, // スタックトレースの最大長を増やす（省略を防ぐ）
+
+            // オプション: エラー捕捉時のカスタムコールバック
+            onErrorCallback: function (errorInfo) {
+              console.log("カスタムコールバックが呼び出されました:", errorInfo);
+            },
+          });
+
+          console.log("ClientErrorCaptureライブラリが正常に初期化されました");
+        } catch (e) {
+          console.error(
+            "ClientErrorCaptureライブラリの初期化に失敗しました:",
+            e
+          );
+        }
+      });
+
+      window.onload = function () {
+        // テスト用のボタンを動的に追加
+        var testButton = document.createElement("button");
+        testButton.innerText = "エラーを発生させる";
+        testButton.onclick = function () {
+          // 意図的にキャッチされないエラーを発生させる
+          throw new Error("ボタンクリックによる意図的なエラー");
+        };
+        document.body.appendChild(testButton);
+
+        // 別のテスト用ボタン：存在しない関数を呼び出す
+        var testButton2 = document.createElement("button");
+        testButton2.innerText = "存在しない関数を呼び出す";
+        testButton2.style.marginLeft = "10px";
+        testButton2.onclick = function () {
+          nonExistentFunction();
+        };
+        document.body.appendChild(testButton2);
+
+        // 手動でエラーをキャプチャするテスト用ボタン
+        var testButton3 = document.createElement("button");
+        testButton3.innerText = "null参照エラー";
+        testButton3.style.marginLeft = "10px";
+        testButton3.onclick = function () {
+          try {
+            var obj = null;
+            obj.property = "test"; // null参照エラー
+          } catch (e) {
+            // エラーを手動でキャプチャ（ソースコードの位置情報も含める）
+            ClientErrorCapture.captureError(e, {
+              context: "テスト用の手動キャプチャ",
+              component: "Button3",
+            });
+          }
+        };
+        document.body.appendChild(testButton3);
+
+        // Promise拒否エラーのテスト用ボタン
+        var testButton4 = document.createElement("button");
+        testButton4.innerText = "Promiseエラー";
+        testButton4.style.marginLeft = "10px";
+        testButton4.onclick = function () {
+          // 意図的に拒否されるPromise
+          new Promise(function (resolve, reject) {
+            setTimeout(function () {
+              reject(new Error("これは拒否されたPromiseのエラーです"));
+            }, 100);
+          });
+        };
+        document.body.appendChild(testButton4);
+
+        // 3秒後に自動的にエラーを発生
+        setTimeout(function () {
+          // 意図的にキャッチされないエラーを発生させる
+          throw new Error("これは意図的に発生させたキャッチされないエラーです");
+        }, 3000);
+      };
+    </script>
+  </head>
+  <body>
+    <h1>エラーキャプチャテスト</h1>
+    <p>このページは、グローバルなエラーキャプチャのテスト用です。</p>
+    <p>コンソールを開いて（F12キー）、エラーメッセージを確認してください。</p>
+    <p>
+      3秒後に自動的にエラーが発生します。また、以下のボタンを使ってさまざまなエラーをテストできます。
+    </p>
+  </body>
+</html>

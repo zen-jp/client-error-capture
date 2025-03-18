@@ -1,0 +1,44 @@
+{
+  "name": "web-error-capture",
+  "version": "1.0.0",
+  "description": "Webフロントエンド専用のグローバルエラーキャプチャライブラリ",
+  "main": "js/client-error-capture.js",
+  "module": "js/client-error-capture.js",
+  "types": "js/client-error-capture.d.ts", 
+  "scripts": {
+    "test": "jest",
+    "lint": "eslint js/*.js",
+    "format": "prettier --write \"js/**/*.js\" \"example/**/*.html\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zenplace-system/client-error-capture.git"
+  },
+  "keywords": [
+    "error",
+    "web",
+    "frontend",
+    "browser",
+    "logging",
+    "monitoring",
+    "capture"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zenplace-system/client-error-capture/issues"
+  },
+  "homepage": "https://github.com/zenplace-system/client-error-capture#readme",
+  "devDependencies": {
+    "eslint": "^8.36.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.8"
+  },
+  "files": [
+    "js/client-error-capture.js",
+    "js/client-error-capture.d.ts",
+    "LICENSE",
+    "README.md",
+    "USAGE.md"
+  ]
+}
