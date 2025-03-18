@@ -110,6 +110,11 @@ export interface ClientErrorCaptureConfig {
  */
 export interface ErrorInfo {
   /**
+   * エラーID（一意の識別子）
+   */
+  id: string;
+
+  /**
    * エラーメッセージ
    */
   message: string;
@@ -125,14 +130,29 @@ export interface ErrorInfo {
   timestamp: string;
 
   /**
+   * エラータイプ
+   */
+  type: 'uncaught' | 'unhandledrejection' | 'manual' | string;
+
+  /**
+   * アプリケーション名
+   */
+  appName: string;
+
+  /**
+   * アプリケーションバージョン
+   */
+  appVersion: string;
+
+  /**
+   * 環境（production, development, etc）
+   */
+  environment: 'production' | 'staging' | 'develop' | 'local' | 'preview' | string;
+
+  /**
    * 追加のメタデータ
    */
   meta: {
-    /**
-     * エラータイプ
-     */
-    type: 'uncaught' | 'unhandledrejection' | 'manual' | string;
-
     /**
      * エラー発生元URL
      */
@@ -167,21 +187,6 @@ export interface ErrorInfo {
      * リファラー
      */
     referrer?: string;
-
-    /**
-     * アプリケーション名
-     */
-    appName?: string;
-
-    /**
-     * アプリケーションバージョン
-     */
-    appVersion?: string;
-
-    /**
-     * 環境（production, development, etc）
-     */
-    environment?: 'production' | 'staging' | 'develop' | 'local' | 'preview' | string;
 
     /**
      * ブラウザ情報

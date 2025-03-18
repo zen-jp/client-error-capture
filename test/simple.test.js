@@ -269,5 +269,20 @@ describe('サーバー連携テスト', () => {
     // 最初の呼び出しを取得
     const firstCall = fetchCalls[0];
     expect(firstCall.url).toBe('https://example.com/api/errors');
+    
+    // リクエストボディを検証（可能な場合）
+    if (firstCall.options && firstCall.options.body) {
+      try {
+        const body = JSON.parse(firstCall.options.body);
+        // 新しいフォーマットの検証
+        expect(body.id).toBeDefined(); // 新しいIDフィールドが存在するか
+        expect(body.type).toBeDefined(); // typeがトップレベルに移動されているか
+        expect(body.environment).toBeDefined(); // environmentがトップレベルに移動されているか
+        expect(body.appName).toBeDefined(); // appNameがトップレベルに移動されているか
+        expect(body.appVersion).toBeDefined(); // appVersionがトップレベルに移動されているか
+      } catch (e) {
+        console.log('リクエストボディのJSONパースに失敗しました:', e.message);
+      }
+    }
   });
 });

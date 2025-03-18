@@ -14,7 +14,7 @@ ClientErrorCaptureは、Webフロントエンドアプリケーションの未�
 ## 特徴
 
 - 🔄 既存のエラーハンドラと共存可能
-- 📊 Vercel Log Drain形式準拠のJSONフォーマット
+- 📊 Vercel Log Drain形式準拠のJSONフォーマット（一意のID付き）
 - 🔧 柔軟な設定オプション
 - ⚙️ Promise拒否エラーのハンドリング
 - 🔍 手動エラーキャプチャ機能

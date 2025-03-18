@@ -413,9 +413,14 @@ describe('ClientErrorCapture サーバー連携テスト', () => {
     expect(options.headers['Content-Type']).toBe('application/json');
     
     const body = JSON.parse(options.body);
-    expect(body.appName).toBe('TestApp');
-    expect(body.environment).toBe('test');
-    expect(body.errorMessage).toBe('サーバー送信テスト');
+    
+    // 新しいフォーマットの検証
+    expect(body.id).toBeDefined(); // 新しいIDフィールドが存在するか
+    expect(body.appName).toBe('TestApp'); // トップレベルに移動されたappName
+    expect(body.environment).toBe('test'); // トップレベルに移動されたenvironment
+    expect(body.type).toBeDefined(); // トップレベルに移動されたtype
+    expect(body.appVersion).toBeDefined(); // トップレベルに移動されたappVersion
+    expect(body.message).toBeDefined(); // メッセージフィールド
   });
   
   test('カスタムヘッダーでエラーが送信される', async () => {

@@ -147,6 +147,12 @@ ClientErrorCapture.init({
         if (errorData.meta && errorData.meta.stack) {
             errorData.meta.stack = errorData.meta.stack.replace(/password=\w+/g, 'password=REDACTED');
         }
+        
+        // 必要に応じてトップレベルフィールドも変換
+        if (errorData.message) {
+            errorData.message = errorData.message.replace(/password=\w+/g, 'password=REDACTED');
+        }
+        
         return errorData; // 変換後のデータを返す（nullを返すとログが送信されません）
     }
 });
@@ -237,11 +243,15 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
 
 ```javascript
 {
+    id: "1723208045388320804538811400000",  // 一意のID
     message: "TypeError: Cannot read property 'foo' of null",
     level: "error",
     timestamp: "2023-03-15T12:34:56.789Z",
+    type: "uncaught",                       // エラータイプ（uncaught, unhandledrejection, manual）
+    appName: "YourAppName",                 // アプリケーション名
+    appVersion: "1.0.0",                    // アプリケーションバージョン
+    environment: "production",              // 環境
     meta: {
-        type: "uncaught",              // エラータイプ（uncaught, unhandledrejection, manual）
         source: "https://example.com/script.js",
         lineno: 42,
         colno: 13,
@@ -249,9 +259,6 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
         userAgent: "Mozilla/5.0 (Windows...)",
         url: "https://example.com/page",
         referrer: "https://example.com/",
-        appName: "YourAppName",
-        appVersion: "1.0.0",
-        environment: "production",
         browser: {
             name: "Chrome",
             version: "89.0.4389.82",
@@ -265,6 +272,8 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
     }
 }
 ```
+
+このフォーマットはVercel Log Drain形式に準拠しており、エラー情報の主要なフィールドがトップレベルに配置されています。
 
 ## サーバー側の実装
 

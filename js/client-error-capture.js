@@ -271,6 +271,24 @@
      * @private
      * @return {Object} フォーマットされたエラー情報
      */
+    /**
+     * 一意のIDを生成する
+     * @private
+     * @return {String} 生成されたID
+     */
+    _generateUniqueId: function () {
+      // タイムスタンプベースのID生成（Vercel request IDに似た形式）
+      const timestamp = Date.now();
+      const randomPart = Math.floor(Math.random() * 10000000000000000).toString().padStart(16, '0');
+      return timestamp.toString() + randomPart;
+    },
+
+    /**
+     * エラー情報をフォーマットする
+     * @param {Object} errorData エラーデータ
+     * @private
+     * @return {Object} フォーマットされたエラー情報
+     */
     _formatErrorInfo: function (errorData) {
       var errorType = errorData.type || "unknown";
       var errorObj = errorData.error || {};
@@ -330,8 +348,11 @@
         }
       }
 
+      // 現在のタイムスタンプ
+      const currentTimestamp = new Date().toISOString();
+
+      // metaオブジェクト（一部のフィールドはトップレベルに移動）
       var meta = {
-        type: errorType,
         source: errorData.source || window.location.href,
         lineno: lineNo,
         colno: colNo,
@@ -339,19 +360,21 @@
         userAgent: navigator.userAgent,
         url: window.location.href,
         referrer: document.referrer,
-        appName: this.config.appName,
-        appVersion: this.config.version,
-        environment: this.config.environment,
         browser: browserInfo,
-        timestamp: new Date().toISOString(),
+        timestamp: currentTimestamp,
         // オプションの追加情報
         ...(errorData.additionalInfo || {}),
       };
 
       return {
+        id: this._generateUniqueId(),
         message: errorMessage,
         level: "error",
-        timestamp: new Date().toISOString(),
+        timestamp: currentTimestamp,
+        type: errorType,
+        appName: this.config.appName,
+        appVersion: this.config.version,
+        environment: this.config.environment,
         meta: meta,
       };
     },
