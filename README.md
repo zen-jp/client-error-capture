@@ -26,19 +26,19 @@ ClientErrorCaptureは、Webフロントエンドアプリケーションの未�
 ### npmを使用する場合
 
 ```bash
-npm install client-error-capture
+npm install github:zenplace-system/client-error-capture
 ```
 
 ### bunを使用する場合
 
 ```bash
-bun add client-error-capture
+bun add github:zenplace-system/client-error-capture
 ```
 
 ### 直接スクリプトを読み込む場合
 
 ```html
-<script src="https://cdn.example.com/client-error-capture.min.js"></script>
+<script src="/js/client-error-capture.js"></script>
 ```
 
 ## 基本的な使用方法
@@ -137,6 +137,11 @@ export function ErrorCaptureProvider({ children }) {
 
   return children;
 }
+
+// layout.tsx で ErrorCaptureProvider を使用します。
+<ErrorCaptureProvider>
+  {children}
+</ErrorCaptureProvider>
 ```
 
 ## プレーンなHTMLサイトへの導入

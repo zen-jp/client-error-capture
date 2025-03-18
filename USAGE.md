@@ -17,21 +17,27 @@ ClientErrorCaptureは、Webフロントエンド専用のエラーキャプチ�
 
 ## インストール
 
-### NPM経由
+### npmを使用する場合
 
 ```bash
-npm install client-error-capture
+npm install github:zenplace-system/client-error-capture
 ```
 
-### CDN経由
+### bunを使用する場合
+
+```bash
+bun add github:zenplace-system/client-error-capture
+```
+
+### 直接スクリプトを読み込む場合
 
 ```html
-<script src="https://cdn.example.com/client-error-capture.min.js"></script>
+<script src="/js/client-error-capture.js"></script>
 ```
 
 ### 直接ダウンロード
 
-[リリースページ](https://github.com/your-username/client-error-capture/releases)からファイルをダウンロードして、プロジェクトに追加してください。
+[リリースページ](https://github.com/zenplace-system/client-error-capture/releases)からファイルをダウンロードして、プロジェクトに追加してください。
 
 ## 基本的な使用方法
 
