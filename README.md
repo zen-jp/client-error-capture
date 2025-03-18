@@ -139,6 +139,122 @@ export function ErrorCaptureProvider({ children }) {
 }
 ```
 
+## プレーンなHTMLサイトへの導入
+
+### インストール方法
+
+GitHubリポジトリから直接インストールするには：
+```bash
+# npmの場合
+npm install github:zenplace-system/client-error-capture
+
+# yarnの場合
+yarn add github:zenplace-system/client-error-capture
+
+# bunの場合
+bun add github:zenplace-system/client-error-capture
+```
+
+### 自動コピースクリプトの設定
+
+HTMLプロジェクトでは、ライブラリファイルを適切な場所に自動的にコピーするスクリプトを設定することをお勧めします。
+
+`package.json`に以下のスクリプトを追加してください：
+
+```json
+{
+  "scripts": {
+    "prebuild": "npm run copy-libs",
+    "predev": "npm run copy-libs", 
+    "build": "あなたのビルドコマンド",
+    "dev": "あなたの開発サーバー起動コマンド",
+    "copy-libs": "mkdir -p public/js && cp node_modules/client-error-capture/js/client-error-capture.js public/js/"
+  }
+}
+```
+
+このようにすることで：
+
+- 開発サーバーを起動する前（`bun run dev`）
+- ビルドを実行する前（`bun run build`）
+
+に自動的にライブラリファイルがコピーされるようになります。
+
+### HTMLでの使用方法
+
+1. HTMLファイルの`<head>`セクションにスクリプトを追加：
+
+```html
+<head>
+  <!-- エラーキャプチャライブラリを読み込み -->
+  <script src="./js/client-error-capture.js"></script>
+  
+  <script>
+    // ライブラリの初期化
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        ClientErrorCapture.init({
+          logToConsole: true,             // コンソールにエラーを出力
+          logToServer: true,              // サーバーにエラーログを送信
+          logServerUrl: 'あなたのログサーバーのURL', // ログ送信先URL
+          appName: 'アプリケーション名',      // アプリケーション名
+          environment: 'production',      // 環境設定（production/staging/development等）
+          version: '1.0.0',               // アプリバージョン
+          maxStackLength: 1000,           // スタックトレースの最大長
+          
+          // オプション: エラー捕捉時のカスタムコールバック
+          onErrorCallback: function(errorInfo) {
+            console.log('エラーが捕捉されました:', errorInfo);
+          }
+        });
+        
+        console.log('ClientErrorCaptureライブラリが初期化されました');
+      } catch (e) {
+        console.error('ClientErrorCaptureライブラリの初期化に失敗:', e);
+      }
+    });
+  </script>
+</head>
+```
+
+### 主な機能
+
+#### 自動エラーキャプチャ
+
+初期化すると、以下のエラーが自動的に捕捉されます：
+
+- 未処理の例外（`window.onerror`）
+- Promise拒否エラー（`unhandledrejection`）
+- コンソールエラー（`console.error`のオーバーライド）
+
+#### 手動エラーキャプチャ
+
+try-catchブロック内でエラーを手動でキャプチャする場合：
+
+```javascript
+try {
+  // エラーが発生する可能性のあるコード
+  someRiskyOperation();
+} catch (e) {
+  // エラーを手動でキャプチャ
+  ClientErrorCapture.captureError(e, {
+    context: 'コンテキスト情報',
+    component: 'コンポーネント名'
+  });
+}
+```
+
+#### 実装例
+
+完全な実装例については、`node_modules/client-error-capture/example`ディレクトリ内のサンプルファイルを参照してください。または、公式GitHub リポジトリの[zenplace-system/client-error-capture](https://github.com/zenplace-system/client-error-capture)をご覧ください。
+
+### トラブルシューティング
+
+- ライブラリがロードされない場合は、パスが正しいことを確認してください
+- サーバーにログが送信されない場合は、`logServerUrl`が正しく設定されていることを確認してください
+- CORSエラーが発生する場合は、サーバー側でCORS設定を適切に構成してください
+
+
 詳細な使用方法や高度な設定オプション、トラブルシューティングについては、[USAGE.md](./USAGE.md)を参照してください。
 
 ## サポート
