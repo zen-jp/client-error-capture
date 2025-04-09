@@ -243,6 +243,7 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
 
 ```javascript
 {
+    
     id: "1723208045388320804538811400000",  // 一意のID
     message: "TypeError: Cannot read property 'foo' of null",
     level: "error",
@@ -258,7 +259,6 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
         stack: "TypeError: Cannot read...",
         userAgent: "Mozilla/5.0 (Windows...)",
         url: "https://example.com/page",
-        referrer: "https://example.com/",
         browser: {
             name: "Chrome",
             version: "89.0.4389.82",
@@ -266,7 +266,8 @@ ClientErrorCaptureがサーバーに送信するエラー情報は以下の形�
             language: "ja",
             cookiesEnabled: true
         },
-        // 追加情報はここに含まれる
+        // 任意項目
+        referrer: "https://example.com/",
         context: "user dashboard",
         userId: "user123"
     }
