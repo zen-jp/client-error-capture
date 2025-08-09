@@ -1,5 +1,5 @@
 {
-  "name": "zen-client-error-capture",
+  "name": "client-error-capture",
   "version": "1.1.0",
   "description": "Browser error capture and reporting library",
   "main": "js/client-error-capture.js",

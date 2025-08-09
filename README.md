@@ -26,13 +26,13 @@ ClientErrorCaptureは、Webフロントエンドアプリケーションの未�
 ### npmを使用する場合
 
 ```bash
-npm install github:zen-jp/zen-client-error-capture
+npm install github:zen-jp/client-error-capture
 ```
 
 ### bunを使用する場合
 
 ```bash
-bun add github:zen-jp/zen-client-error-capture
+bun add github:zen-jp/client-error-capture
 ```
 
 ### 直接スクリプトを読み込む場合
@@ -151,13 +151,13 @@ export function ErrorCaptureProvider({ children }) {
 GitHubリポジトリから直接インストールするには：
 ```bash
 # npmの場合
-npm install github:zen-jp/zen-client-error-capture
+npm install github:zen-jp/client-error-capture
 
 # yarnの場合
-yarn add github:zen-jp/zen-client-error-capture
+yarn add github:zen-jp/client-error-capture
 
 # bunの場合
-bun add github:zen-jp/zen-client-error-capture
+bun add github:zen-jp/client-error-capture
 ```
 
 ### 自動コピースクリプトの設定
@@ -251,7 +251,7 @@ try {
 
 #### 実装例
 
-完全な実装例については、`node_modules/client-error-capture/example`ディレクトリ内のサンプルファイルを参照してください。または、公式GitHub リポジトリの[zen-jp/zen-client-error-capture](https://github.com/zen-jp/zen-client-error-capture)をご覧ください。
+完全な実装例については、`node_modules/client-error-capture/example`ディレクトリ内のサンプルファイルを参照してください。または、公式GitHub リポジトリの[zen-jp/client-error-capture](https://github.com/zen-jp/client-error-capture)をご覧ください。
 
 ### トラブルシューティング
 
@@ -264,7 +264,7 @@ try {
 
 ## サポート
 
-問題や質問がある場合は、[GitHub Issues](https://github.com/zen-jp/zen-client-error-capture/issues)にてご連絡ください。
+問題や質問がある場合は、[GitHub Issues](https://github.com/zen-jp/client-error-capture/issues)にてご連絡ください。
 
 ## ライセンス
 

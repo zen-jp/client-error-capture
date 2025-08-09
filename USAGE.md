@@ -20,13 +20,13 @@ ClientErrorCaptureは、Webフロントエンド専用のエラーキャプチ�
 ### npmを使用する場合
 
 ```bash
-npm install github:zen-jp/zen-client-error-capture
+npm install github:zen-jp/client-error-capture
 ```
 
 ### bunを使用する場合
 
 ```bash
-bun add github:zen-jp/zen-client-error-capture
+bun add github:zen-jp/client-error-capture
 ```
 
 ### 直接スクリプトを読み込む場合
@@ -37,7 +37,7 @@ bun add github:zen-jp/zen-client-error-capture
 
 ### 直接ダウンロード
 
-[リリースページ](https://github.com/zen-jp/zen-client-error-capture/releases)からファイルをダウンロードして、プロジェクトに追加してください。
+[リリースページ](https://github.com/zen-jp/client-error-capture/releases)からファイルをダウンロードして、プロジェクトに追加してください。
 
 ## 基本的な使用方法
 
