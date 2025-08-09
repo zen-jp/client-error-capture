@@ -1,5 +1,5 @@
 {
-  "name": "client-error-capture",
+  "name": "zen-client-error-capture",
   "version": "1.1.0",
   "description": "Browser error capture and reporting library",
   "main": "js/client-error-capture.js",
@@ -23,7 +23,7 @@
     "client",
     "reporting"
   ],
-  "author": "Zenplace",
+  "author": "ZEN PLACE",
   "license": "MIT",
   "devDependencies": {
     "bun-types": "latest",
