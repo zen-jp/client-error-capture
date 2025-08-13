@@ -103,6 +103,36 @@ export interface ClientErrorCaptureConfig {
    * @default 1.5
    */
   backoffFactor?: number;
+
+  /**
+   * 送信ペイロードのキーをsnake_caseに変換するか
+   * @default true
+   */
+  snakeCasePayload?: boolean;
+
+  /**
+   * 送信時に付与するスキーマ名（例: "default"）
+   * ライブラリ内では任意で、送信時にのみpayloadへ反映されます
+   */
+  schemaName?: string;
+
+  /**
+   * 送信時に付与するスキーマバージョン（例: "0.1"）
+   * ライブラリ内では任意で、送信時にのみpayloadへ反映されます
+   */
+  schemaVersion?: string;
+
+  /**
+   * 送信時に付与するauth_key（任意）
+   * ライブラリ内では保持のみ、送信時にのみpayloadへ反映されます
+   */
+  authKey?: string;
+
+  /**
+   * 予約フィールド（tag, service）をトップレベルから除外するか
+   * @default true
+   */
+  protectReservedFields?: boolean;
 }
 
 /**

@@ -43,6 +43,18 @@
       samplingSetting: 1.0, // サンプリング率（0.0-1.0）
       maxAttempts: 3, // 再試行の最大回数
       backoffFactor: 1.5, // バックオフ係数
+      // 送信時の拡張設定（任意: ログサーバー仕様向け）
+      snakeCasePayload: true, // 送信ペイロードのキーをsnake_caseに変換するか
+      schemaName: undefined, // 送信時に付与するschema_name（任意）
+      schemaVersion: undefined, // 送信時に付与するschema_version（任意）
+      authKey: undefined, // 送信時に付与するauth_key（任意）
+      protectReservedFields: true, // 予約フィールド(tag, service)をトップレベルから除外
+      // デバイスID保存に関する設定
+      deviceIdStorageKey: "cec_device_id",
+      deviceIdCookieName: "cec_did",
+      deviceIdCookieDomain: undefined,
+      deviceIdExpiryDays: 3650,
+      respectDoNotTrack: false,
     },
 
     /**
@@ -104,6 +116,13 @@
         // 元のエラーハンドラを保存
         this.originalOnError = window.onerror;
         this.originalOnUnhandledRejection = window.onunhandledrejection;
+
+        // デバイスIDを初期化
+        try {
+          this.deviceId = this._getOrCreateDeviceId();
+        } catch (_) {
+          this.deviceId = this._generateEventId();
+        }
 
         // エラーハンドラをインストール
         this._installHandler();
@@ -276,11 +295,104 @@
      * @private
      * @return {String} 生成されたID
      */
+    // 互換維持: 旧API名は内部的にeventId生成へ委譲
     _generateUniqueId: function () {
-      // タイムスタンプベースのID生成（Vercel request IDに似た形式）
-      const timestamp = Date.now();
-      const randomPart = Math.floor(Math.random() * 10000000000000000).toString().padStart(16, '0');
-      return timestamp.toString() + randomPart;
+      return this._generateEventId();
+    },
+
+    /**
+     * イベントごと一意のIDを生成（UUID v4優先）
+     * @private
+     * @return {String} 生成されたeventId
+     */
+    _generateEventId: function () {
+      try {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return crypto.randomUUID();
+        }
+      } catch (_) {}
+      try {
+        if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+          var buf = new Uint8Array(16);
+          crypto.getRandomValues(buf);
+          buf[6] = (buf[6] & 0x0f) | 0x40; // version 4
+          buf[8] = (buf[8] & 0x3f) | 0x80; // variant 10
+          var hex = Array.prototype.map.call(buf, function (b) {
+            return (b + 0x100).toString(16).slice(1);
+          });
+          return (
+            hex[0] + hex[1] + hex[2] + hex[3] + '-' +
+            hex[4] + hex[5] + '-' +
+            hex[6] + hex[7] + '-' +
+            hex[8] + hex[9] + '-' +
+            hex[10] + hex[11] + hex[12] + hex[13] + hex[14] + hex[15]
+          );
+        }
+      } catch (_) {}
+      // 最終フォールバック
+      return (
+        Date.now().toString(36) + Math.random().toString(36).slice(2, 12)
+      ).toUpperCase();
+    },
+
+    /**
+     * 端末ごと一意のIDを取得または生成して永続化
+     * @private
+     * @return {String} deviceId
+     */
+    _getOrCreateDeviceId: function () {
+      try {
+        var key = (this.config && this.config.deviceIdStorageKey) || 'cec_device_id';
+        var cookieName = (this.config && this.config.deviceIdCookieName) || 'cec_did';
+        var prefix = 'device-';
+
+        // 1) localStorage
+        try {
+          var ls = window.localStorage;
+          var existing = ls && ls.getItem(key);
+          if (existing) return existing.indexOf(prefix) === 0 ? existing : (prefix + existing);
+        } catch (_) {}
+
+        // 2) cookie
+        try {
+          var m = document.cookie.match(new RegExp('(?:^|; )' + cookieName.replace(/([.$?*|{}()\[\]\\/+^])/g, '\\$1') + '=([^;]*)'));
+          if (m) {
+            var cookieVal = decodeURIComponent(m[1]);
+            return cookieVal.indexOf(prefix) === 0 ? cookieVal : (prefix + cookieVal);
+          }
+        } catch (_) {}
+
+        // 3) 新規生成
+        var newId = prefix + this._generateEventId();
+
+        // DNT配慮: respectDoNotTrack=true かつ DNT=1 の場合は sessionStorage のみ
+        var dnt = (navigator && (navigator.doNotTrack === '1')) || (window && (window.doNotTrack === '1'));
+        if (this.config && this.config.respectDoNotTrack && dnt) {
+          try { sessionStorage.setItem(key, newId); } catch (_) {}
+          return newId;
+        }
+
+        // 4) localStorage 保存、不可なら Cookie 保存
+        var saved = false;
+        try {
+          var ls2 = window.localStorage;
+          if (ls2) { ls2.setItem(key, newId); saved = true; }
+        } catch (_) {}
+        if (!saved) {
+          try {
+            var days = (this.config && this.config.deviceIdExpiryDays) || 3650;
+            var domain = this.config && this.config.deviceIdCookieDomain;
+            var exp = new Date(Date.now() + days * 86400000).toUTCString();
+            var cookie = cookieName + '=' + encodeURIComponent(newId) + '; Expires=' + exp + '; Path=/; SameSite=Lax';
+            if (location && location.protocol === 'https:') cookie += '; Secure';
+            if (domain) cookie += '; Domain=' + domain;
+            document.cookie = cookie;
+          } catch (_) {}
+        }
+        return newId;
+      } catch (_) {
+        return this._generateEventId();
+      }
     },
 
     /**
@@ -367,7 +479,8 @@
       };
 
       return {
-        id: this._generateUniqueId(),
+        id: this._getOrCreateDeviceId(),
+        eventId: this._generateEventId(),
         message: errorMessage,
         level: "error",
         timestamp: currentTimestamp,
@@ -546,9 +659,106 @@
             reject(new Error("Network error occurred"));
           }.bind(this);
 
-          xhr.send(JSON.stringify(errorInfo));
+          // 送信前にペイロードを構築（snake_case変換やschema付与など）
+          var payload = this._buildRequestPayload(errorInfo);
+          xhr.send(JSON.stringify(payload));
         }.bind(this)
       );
+    },
+
+    /**
+     * 送信ペイロードを構築（任意のschemaフィールド付与、snake_case変換、予約語保護）
+     * @param {Object} errorInfo フォーマット済みのエラー情報（camelCase）
+     * @private
+     * @return {Object} 送信用エラーペイロード
+     */
+    _buildRequestPayload: function (errorInfo) {
+      var payload = this._deepClone(errorInfo);
+
+      // 任意のschemaフィールドを追加
+      if (this.config && typeof this.config.schemaName === "string" && this.config.schemaName) {
+        payload.schemaName = this.config.schemaName;
+      }
+      if (this.config && typeof this.config.schemaVersion === "string" && this.config.schemaVersion) {
+        payload.schemaVersion = this.config.schemaVersion;
+      }
+
+      // 任意のauthKeyを追加（送信時のみ）
+      if (this.config && typeof this.config.authKey === "string" && this.config.authKey) {
+        payload.authKey = this.config.authKey;
+      }
+
+      // 予約フィールド(tag, service)のトップレベル保護
+      if (this.config && this.config.protectReservedFields) {
+        if (payload && Object.prototype.hasOwnProperty.call(payload, "tag")) {
+          try { delete payload.tag; } catch (_) {}
+        }
+        if (payload && Object.prototype.hasOwnProperty.call(payload, "service")) {
+          try { delete payload.service; } catch (_) {}
+        }
+      }
+
+      // snake_case変換（必要な場合）
+      if (this.config && this.config.snakeCasePayload) {
+        payload = this._convertObjectKeysToSnakeCase(payload);
+      }
+
+      return payload;
+    },
+
+    /**
+     * オブジェクトを深くクローン
+     * @param {any} value クローン対象
+     * @private
+     * @return {any} クローン結果
+     */
+    _deepClone: function (value) {
+      try {
+        return JSON.parse(JSON.stringify(value));
+      } catch (_) {
+        return value;
+      }
+    },
+
+    /**
+     * 文字列をsnake_caseに変換
+     * @param {String} str 入力文字列
+     * @private
+     * @return {String} snake_case文字列
+     */
+    _toSnakeCase: function (str) {
+      return String(str)
+        .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+        .replace(/[-\s]+/g, "_")
+        .toLowerCase();
+    },
+
+    /**
+     * オブジェクトのキーを再帰的にsnake_caseへ変換
+     * @param {any} input 入力データ
+     * @private
+     * @return {any} 変換後データ
+     */
+    _convertObjectKeysToSnakeCase: function (input) {
+      if (input === null || input === undefined) return input;
+      if (Array.isArray(input)) {
+        var arr = new Array(input.length);
+        for (var i = 0; i < input.length; i++) {
+          arr[i] = this._convertObjectKeysToSnakeCase(input[i]);
+        }
+        return arr;
+      }
+      if (Object.prototype.toString.call(input) === "[object Object]") {
+        var output = {};
+        for (var key in input) {
+          if (!Object.prototype.hasOwnProperty.call(input, key)) continue;
+          var newKey = this._toSnakeCase(key);
+          // 予約フィールド保護はトップレベルで実施。ここでは純粋に変換のみ。
+          output[newKey] = this._convertObjectKeysToSnakeCase(input[key]);
+        }
+        return output;
+      }
+      return input;
     },
 
     /**
