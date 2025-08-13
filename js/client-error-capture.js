@@ -744,30 +744,122 @@
      * @return {Object} ブラウザ情報
      */
     _getBrowserInfo: function () {
-      var ua = navigator.userAgent;
-      var browserName = "";
-      var browserVersion = "";
-      var platform = navigator.platform;
+      var ua = navigator.userAgent || "";
+      var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform;
 
-      // ブラウザ名とバージョンを特定
-      if (ua.indexOf("Firefox") > -1) {
-        browserName = "Firefox";
-        browserVersion = ua.match(/Firefox\/([0-9.]+)/)[1];
-      } else if (ua.indexOf("Chrome") > -1) {
-        browserName = "Chrome";
-        browserVersion = ua.match(/Chrome\/([0-9.]+)/)[1];
-      } else if (ua.indexOf("Safari") > -1 && ua.indexOf("Chrome") === -1) {
-        browserName = "Safari";
-        browserVersion = ua.match(/Version\/([0-9.]+)/)[1];
-      } else if (ua.indexOf("MSIE") > -1 || ua.indexOf("Trident/") > -1) {
-        browserName = "Internet Explorer";
-        browserVersion = ua.match(/(?:MSIE |rv:)([0-9.]+)/)[1];
-      } else if (ua.indexOf("Edge") > -1) {
+      var browserName = "Unknown";
+      var browserVersion = "Unknown";
+
+      var isAndroid = /Android/i.test(ua);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      var extract = function (regex) {
+        try {
+          var m = ua.match(regex);
+          return m && m[1] ? m[1] : "Unknown";
+        } catch (e) {
+          return "Unknown";
+        }
+      };
+
+      // UA-CH (Chromium) が使える場合のヒント
+      var uaDataBrand = null;
+      var uaDataVersion = null;
+      try {
+        if (navigator.userAgentData && navigator.userAgentData.brands && navigator.userAgentData.brands.length) {
+          for (var i = 0; i < navigator.userAgentData.brands.length; i++) {
+            var b = navigator.userAgentData.brands[i];
+            if (b && b.brand && b.brand !== "Not:A-Brand" && b.brand !== "Not)A;Brand") {
+              uaDataBrand = b.brand;
+              uaDataVersion = b.version;
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+
+      // 1) 新Edge系 (優先)
+      if (/EdgiOS\//.test(ua)) {
+        browserName = "Edge (iOS)";
+        browserVersion = extract(/EdgiOS\/([0-9.]+)/);
+      } else if (/EdgA\//.test(ua)) {
+        browserName = "Edge (Android)";
+        browserVersion = extract(/EdgA\/([0-9.]+)/);
+      } else if (/Edg\//.test(ua)) {
         browserName = "Edge";
-        browserVersion = ua.match(/Edge\/([0-9.]+)/)[1];
-      } else {
-        browserName = "Unknown";
+        browserVersion = extract(/Edg\/([0-9.]+)/);
+      } else if (/\bEdge\//.test(ua)) {
+        browserName = "Edge (Legacy)";
+        browserVersion = extract(/Edge\/([0-9.]+)/);
+      // 2) Opera/Vivaldi/Whale/Yandex/Samsung/UC
+      } else if (/OPR\//.test(ua) || /Opera\//.test(ua)) {
+        browserName = "Opera";
+        browserVersion = /OPR\//.test(ua) ? extract(/OPR\/([0-9.]+)/) : extract(/Opera\/([0-9.]+)/);
+      } else if (/Vivaldi\//.test(ua)) {
+        browserName = "Vivaldi";
+        browserVersion = extract(/Vivaldi\/([0-9.]+)/);
+      } else if (/Whale\//.test(ua)) {
+        browserName = "Whale";
+        browserVersion = extract(/Whale\/([0-9.]+)/);
+      } else if (/YaBrowser\//.test(ua)) {
+        browserName = "Yandex";
+        browserVersion = extract(/YaBrowser\/([0-9.]+)/);
+      } else if (/SamsungBrowser\//.test(ua)) {
+        browserName = "Samsung Internet";
+        browserVersion = extract(/SamsungBrowser\/([0-9.]+)/);
+      } else if (/UCBrowser\//.test(ua)) {
+        browserName = "UC Browser";
+        browserVersion = extract(/UCBrowser\/([0-9.]+)/);
+      // 3) iOS専用ブラウザの識別
+      } else if (isIOS && /CriOS\//.test(ua)) {
+        browserName = "Chrome (iOS)";
+        browserVersion = extract(/CriOS\/([0-9.]+)/);
+      } else if (isIOS && /FxiOS\//.test(ua)) {
+        browserName = "Firefox (iOS)";
+        browserVersion = extract(/FxiOS\/([0-9.]+)/);
+      // 4) WebView の検出
+      } else if (isAndroid && (/\bwv\b/.test(ua) || /Version\/\d+/.test(ua))) {
+        browserName = "Android WebView";
+        browserVersion = extract(/Chrome\/([0-9.]+)/);
+      } else if (isIOS && /AppleWebKit/.test(ua) && !/Safari/.test(ua)) {
+        browserName = "iOS WebView";
         browserVersion = "Unknown";
+      // 5) 主要ブラウザ
+      } else if (/Chrome\//.test(ua) && !/(OPR|Edg|EdgiOS|EdgA|SamsungBrowser|UCBrowser|YaBrowser|Vivaldi|Whale)\//.test(ua)) {
+        // Brave はUAではChrome互換。navigator.brave があれば Brave として扱う
+        if (typeof navigator.brave === "object") {
+          browserName = "Brave";
+          browserVersion = extract(/Chrome\/([0-9.]+)/);
+        } else {
+          browserName = "Chrome";
+          browserVersion = extract(/Chrome\/([0-9.]+)/);
+        }
+      } else if (/Firefox\//.test(ua)) {
+        browserName = "Firefox";
+        browserVersion = extract(/Firefox\/([0-9.]+)/);
+      } else if (/Safari\//.test(ua) && /Version\//.test(ua)) {
+        browserName = "Safari";
+        browserVersion = extract(/Version\/([0-9.]+)/);
+      } else if (/MSIE/.test(ua) || /Trident\//.test(ua)) {
+        browserName = "Internet Explorer";
+        browserVersion = /MSIE\s([0-9.]+)/.test(ua) ? extract(/MSIE\s([0-9.]+)/) : extract(/rv:([0-9.]+)/);
+      }
+
+      // UA-CHの補助情報で補完（未確定時のみ、またはバージョンが不明な場合）
+      if (uaDataBrand) {
+        var mappedName = null;
+        if (/Edge/i.test(uaDataBrand)) mappedName = "Edge";
+        else if (/Chrome/i.test(uaDataBrand)) mappedName = browserName === "Unknown" ? "Chrome" : browserName;
+        else if (/Opera/i.test(uaDataBrand)) mappedName = "Opera";
+        else if (/Chromium/i.test(uaDataBrand)) mappedName = browserName === "Unknown" ? "Chromium" : browserName;
+        else if (/Samsung/i.test(uaDataBrand)) mappedName = "Samsung Internet";
+
+        if (browserName === "Unknown" && mappedName) {
+          browserName = mappedName;
+        }
+        if ((browserVersion === "Unknown" || browserVersion === "0") && uaDataVersion) {
+          browserVersion = String(uaDataVersion);
+        }
       }
 
       return {
