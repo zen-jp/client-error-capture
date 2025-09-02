@@ -41,6 +41,18 @@ bun add github:zen-jp/client-error-capture
 <script src="/js/client-error-capture.js"></script>
 ```
 
+### CDNを使用する場合
+
+#### jsdelivr (例：1.3.0のversion指定する場合)
+```html
+<script src="https://cdn.jsdelivr.net/gh/zen-jp/client-error-capture@v1.3.0/js/client-error-capture.js"></script>
+```
+
+#### jsdelivr (例：最新のversion指定する場合)
+```html
+<script src="https://cdn.jsdelivr.net/gh/zen-jp/client-error-capture@latest/js/client-error-capture.js"></script>
+```
+
 ## 基本的な使用方法
 
 ```javascript
