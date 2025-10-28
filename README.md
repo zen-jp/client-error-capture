@@ -1,7 +1,9 @@
 # ClientErrorCapture
-
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-green.svg)
+
+<img width="1788" height="422" alt="image" src="https://github.com/user-attachments/assets/82a6ea14-20d1-4e80-8d3e-d78e75f5583c" />
+
 
 ClientErrorCaptureは、Webフロントエンド専用のJavaScriptエラーキャプチャライブラリです。ブラウザでの未キャッチエラーやPromise拒否を捕捉し、サーバーへのログ送信、コンソール出力などを行います。
 
