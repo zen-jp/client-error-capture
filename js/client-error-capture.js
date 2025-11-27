@@ -54,6 +54,7 @@
         /^$/,                         // 空文字列
         /^\{\}$/,                     // 空オブジェクトのJSON.stringify結果
         /^\[object \w+\]$/,           // オブジェクトのtoString結果 ([object Object], [object Error]等)
+        /^Uncaught \[object \w+\]$/,  // Uncaught付きのオブジェクトtoString結果
         /^undefined$/,                // undefined が文字列化
         /^null$/,                     // null が文字列化
         // ネットワークエラー（ユーザー環境依存）

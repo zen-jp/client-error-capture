@@ -210,7 +210,7 @@ describe('ClientErrorCapture基本機能テスト', () => {
     
     expect(ClientErrorCapture.config.ignorePatterns).toBeDefined();
     expect(Array.isArray(ClientErrorCapture.config.ignorePatterns)).toBe(true);
-    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(15);
+    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(16);
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error.");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Non-Error promise rejection");
@@ -308,6 +308,8 @@ describe('エラー除外パターンテスト', () => {
     expect(ClientErrorCapture._shouldIgnoreError({ message: "{}" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Object]" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Error]" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Uncaught [object XMLHttpRequest]" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Uncaught [object Object]" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "undefined" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "null" })).toBe(true);
     

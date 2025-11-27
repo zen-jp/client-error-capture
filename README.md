@@ -348,6 +348,7 @@ ignorePatterns: [
   /^$/,                               // 空文字列 ""
   /^\{\}$/,                           // 空オブジェクトのJSON.stringify結果 "{}"
   /^\[object \w+\]$/,                 // オブジェクトのtoString結果 "[object Object]"等
+  /^Uncaught \[object \w+\]$/,        // "Uncaught [object XMLHttpRequest]"等
   /^undefined$/,                      // "undefined"
   /^null$/,                           // "null"
   // ネットワークエラー（ユーザー環境依存）
