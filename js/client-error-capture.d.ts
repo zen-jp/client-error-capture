@@ -105,6 +105,35 @@ export interface ClientErrorCaptureConfig {
   backoffFactor?: number;
 
   /**
+   * 無視するエラーメッセージパターン（文字列または正規表現の配列）
+   * パターンにマッチするエラーは捕捉されません
+   * @default ["Script error.", "Script error", /ResizeObserver loop/, "Non-Error promise rejection", /Loading chunk \d+ failed/, /^\{\}$/, /^\[object \w+\]$/, /^undefined$/, /^null$/]
+   * @example
+   * ```js
+   * ignorePatterns: [
+   *   "Script error.",
+   *   /ResizeObserver loop/,
+   *   "NetworkError"
+   * ]
+   * ```
+   */
+  ignorePatterns?: (string | RegExp)[];
+
+  /**
+   * 無視するURLパターン（文字列または正規表現の配列）
+   * パターンにマッチするURLからのエラーは捕捉されません
+   * @default ["chrome-extension://", "moz-extension://", /googletagmanager\.com/, /facebook\.net/]
+   * @example
+   * ```js
+   * ignoreUrls: [
+   *   "chrome-extension://",
+   *   /googletagmanager\.com/
+   * ]
+   * ```
+   */
+  ignoreUrls?: (string | RegExp)[];
+
+  /**
    * 送信ペイロードのキーをsnake_caseに変換するか
    * @default true
    */
