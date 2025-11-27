@@ -210,7 +210,7 @@ describe('ClientErrorCapture基本機能テスト', () => {
     
     expect(ClientErrorCapture.config.ignorePatterns).toBeDefined();
     expect(Array.isArray(ClientErrorCapture.config.ignorePatterns)).toBe(true);
-    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(5);
+    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(9);
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error.");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Non-Error promise rejection");
@@ -298,6 +298,22 @@ describe('エラー除外パターンテスト', () => {
     
     // 除外されないべきエラー
     expect(ClientErrorCapture._shouldIgnoreError({ message: "TypeError: undefined is not a function" })).toBe(false);
+  });
+  
+  test('意味のないエラーメッセージがデフォルトで除外される', () => {
+    ClientErrorCapture.init({ logToConsole: false });
+    
+    // デフォルトで除外されるべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "{}" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Object]" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Error]" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "undefined" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "null" })).toBe(true);
+    
+    // 除外されないべきエラー（意味のあるメッセージ）
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "TypeError: Cannot read property" })).toBe(false);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "object is undefined" })).toBe(false);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "null reference error" })).toBe(false);
   });
   
   test('_shouldIgnoreErrorがignoreUrlsでエラーを除外する', () => {

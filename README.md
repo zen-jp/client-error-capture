@@ -343,7 +343,12 @@ ignorePatterns: [
   "Script error",                     // クロスオリジンエラー（ピリオドなし）
   /ResizeObserver loop/,              // ResizeObserverの警告
   "Non-Error promise rejection",      // 非Errorオブジェクトのreject
-  /Loading chunk \d+ failed/          // Webpackチャンク読み込みエラー
+  /Loading chunk \d+ failed/,         // Webpackチャンク読み込みエラー
+  // 意味のないエラーメッセージ（情報取得不可・不正なthrow）
+  /^\{\}$/,                           // 空オブジェクトのJSON.stringify結果 "{}"
+  /^\[object \w+\]$/,                 // オブジェクトのtoString結果 "[object Object]"等
+  /^undefined$/,                      // "undefined"
+  /^null$/                            // "null"
 ]
 
 // ignoreUrls のデフォルト値

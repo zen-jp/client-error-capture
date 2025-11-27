@@ -107,7 +107,7 @@ export interface ClientErrorCaptureConfig {
   /**
    * 無視するエラーメッセージパターン（文字列または正規表現の配列）
    * パターンにマッチするエラーは捕捉されません
-   * @default ["Script error.", "Script error", /ResizeObserver loop/, "Non-Error promise rejection", /Loading chunk \d+ failed/]
+   * @default ["Script error.", "Script error", /ResizeObserver loop/, "Non-Error promise rejection", /Loading chunk \d+ failed/, /^\{\}$/, /^\[object \w+\]$/, /^undefined$/, /^null$/]
    * @example
    * ```js
    * ignorePatterns: [
