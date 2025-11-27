@@ -51,10 +51,17 @@
         "Non-Error promise rejection", // 非Errorオブジェクトのreject
         /Loading chunk \d+ failed/,   // Webpackチャンク読み込みエラー
         // 意味のないエラーメッセージ（情報取得不可・不正なthrow）
+        /^$/,                         // 空文字列
         /^\{\}$/,                     // 空オブジェクトのJSON.stringify結果
         /^\[object \w+\]$/,           // オブジェクトのtoString結果 ([object Object], [object Error]等)
         /^undefined$/,                // undefined が文字列化
-        /^null$/                      // null が文字列化
+        /^null$/,                     // null が文字列化
+        // ネットワークエラー（ユーザー環境依存）
+        /^Load failed$/,              // Safari の fetch/リソース読み込み失敗
+        /^Failed to fetch$/,          // Chrome の fetch 失敗
+        /^NetworkError/,              // Firefox/一般的なネットワークエラー
+        /^Network Error$/,            // axios のネットワークエラー
+        /^Network request failed$/    // その他のネットワークエラー
       ],
       ignoreUrls: [
         "chrome-extension://",        // Chrome拡張のエラーを除外
@@ -560,7 +567,8 @@
      * @return {Boolean} マッチした場合true
      */
     _matchesPattern: function (str, pattern) {
-      if (!str || !pattern) {
+      // strがundefined/nullの場合のみ早期リターン（空文字列""は許容）
+      if (str === undefined || str === null || !pattern) {
         return false;
       }
 

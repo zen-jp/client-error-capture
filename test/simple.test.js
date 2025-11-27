@@ -210,7 +210,7 @@ describe('ClientErrorCapture基本機能テスト', () => {
     
     expect(ClientErrorCapture.config.ignorePatterns).toBeDefined();
     expect(Array.isArray(ClientErrorCapture.config.ignorePatterns)).toBe(true);
-    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(9);
+    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(15);
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error.");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error");
     expect(ClientErrorCapture.config.ignorePatterns).toContain("Non-Error promise rejection");
@@ -304,6 +304,7 @@ describe('エラー除外パターンテスト', () => {
     ClientErrorCapture.init({ logToConsole: false });
     
     // デフォルトで除外されるべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "{}" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Object]" })).toBe(true);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "[object Error]" })).toBe(true);
@@ -314,6 +315,21 @@ describe('エラー除外パターンテスト', () => {
     expect(ClientErrorCapture._shouldIgnoreError({ message: "TypeError: Cannot read property" })).toBe(false);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "object is undefined" })).toBe(false);
     expect(ClientErrorCapture._shouldIgnoreError({ message: "null reference error" })).toBe(false);
+  });
+  
+  test('ネットワークエラーがデフォルトで除外される', () => {
+    ClientErrorCapture.init({ logToConsole: false });
+    
+    // デフォルトで除外されるべきネットワークエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Load failed" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Failed to fetch" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "NetworkError when attempting to fetch resource" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Network Error" })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Network request failed" })).toBe(true);
+    
+    // 除外されないべきエラー（ネットワーク関連だが意味のあるメッセージ）
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "API returned error: Network timeout" })).toBe(false);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Connection failed: invalid URL" })).toBe(false);
   });
   
   test('_shouldIgnoreErrorがignoreUrlsでエラーを除外する', () => {
