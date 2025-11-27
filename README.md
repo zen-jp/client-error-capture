@@ -21,6 +21,23 @@ ClientErrorCaptureは、Webフロントエンドアプリケーションの未�
 - ⏱️ スロットリングとリトライロジック
 - 📦 UMD形式で様々な環境で利用可能
 
+## Example
+エラーのサンプルページを確認する場合は、以下のコマンドを実行してください。
+
+```bash
+bun run dev
+```
+
+Then open [http://localhost:8080/example/error_example.html](http://localhost:8080/example/error_example.html)
+```bash
+$ bun dev 
+$ bun x live-server ./
+Ready for changes
+http://0.0.0.0:8080 is already in use. Trying another port.
+Serving "./" at http://127.0.0.1:60020
+```
+
+
 ## インストール
 
 ### npmを使用する場合
@@ -304,12 +321,59 @@ ClientErrorCaptureは、以下の設定オプションをサポートしてい�
 | samplingSetting | number | 1.0 | サンプリング率（0.0-1.0） |
 | maxAttempts | number | 3 | 再試行の最大回数 |
 | backoffFactor | number | 1.5 | バックオフ係数 |
+| ignorePatterns | (string\|RegExp)[] | (後述) | 無視するエラーメッセージパターン |
+| ignoreUrls | (string\|RegExp)[] | (後述) | 無視するソースURLパターン |
 | snakeCasePayload | boolean | true | 送信ペイロードのキーをsnake_caseに変換 |
 | schemaName | string | - | 送信時に付与するスキーマ名（例: default） |
 | schemaVersion | string | - | 送信時に付与するスキーマバージョン（例: 0.1） |
 | protectReservedFields | boolean | true | 予約フィールド（tag, service）をトップレベルから除外 |
 
 ### 設定オプションの詳細
+
+#### ignorePatterns / ignoreUrls
+
+特定のエラーメッセージやURLからのエラーを無視（除外）できます。クロスオリジンスクリプトエラー（"Script error."）やサードパーティライブラリのエラーを除外するのに便利です。
+
+**デフォルト値:**
+
+```javascript
+// ignorePatterns のデフォルト値
+ignorePatterns: [
+  "Script error.",                    // クロスオリジンエラー
+  "Script error",                     // クロスオリジンエラー（ピリオドなし）
+  /ResizeObserver loop/,              // ResizeObserverの警告
+  "Non-Error promise rejection",      // 非Errorオブジェクトのreject
+  /Loading chunk \d+ failed/          // Webpackチャンク読み込みエラー
+]
+
+// ignoreUrls のデフォルト値
+ignoreUrls: [
+  "chrome-extension://",              // Chrome拡張のエラーを除外
+  "moz-extension://",                 // Firefox拡張のエラーを除外
+  /googletagmanager\.com/,            // GTM関連のエラーを除外
+  /facebook\.net/                     // Facebook SDK関連を除外
+]
+```
+
+**カスタマイズ例:**
+
+```javascript
+ClientErrorCapture.init({
+  // デフォルト値を上書きして独自のパターンを設定
+  ignorePatterns: [
+    "Script error.",
+    /ResizeObserver loop/,
+    "MyCustomIgnorePattern"           // 独自のパターンを追加
+  ],
+  
+  ignoreUrls: [
+    "chrome-extension://",
+    /my-analytics-domain\.com/        // 独自のURLパターンを追加
+  ]
+});
+```
+
+**注意**: `ignorePatterns` や `ignoreUrls` を設定すると、デフォルト値は**上書き**されます。デフォルトのパターンを維持しつつ追加したい場合は、デフォルト値も含めて設定してください。
 
 #### transformRequest
 

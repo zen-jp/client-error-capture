@@ -43,6 +43,20 @@
       samplingSetting: 1.0, // サンプリング率（0.0-1.0）
       maxAttempts: 3, // 再試行の最大回数
       backoffFactor: 1.5, // バックオフ係数
+      // エラー除外設定
+      ignorePatterns: [
+        "Script error.",              // クロスオリジンエラー
+        "Script error",               // クロスオリジンエラー（ピリオドなし）
+        /ResizeObserver loop/,        // ResizeObserverの警告
+        "Non-Error promise rejection", // 非Errorオブジェクトのreject
+        /Loading chunk \d+ failed/    // Webpackチャンク読み込みエラー
+      ],
+      ignoreUrls: [
+        "chrome-extension://",        // Chrome拡張のエラーを除外
+        "moz-extension://",           // Firefox拡張のエラーを除外
+        /googletagmanager\.com/,      // GTM関連のエラーを除外
+        /facebook\.net/               // Facebook SDK関連を除外
+      ],
       // 送信時の拡張設定（任意: ログサーバー仕様向け）
       snakeCasePayload: true, // 送信ペイロードのキーをsnake_caseに変換するか
       schemaName: undefined, // 送信時に付与するschema_name（任意）
@@ -205,6 +219,14 @@
      */
     _handleError: function (errorData) {
       try {
+        // 除外パターンに基づいてエラーをフィルタリング
+        if (this._shouldIgnoreError(errorData)) {
+          if (this.config.logToConsole) {
+            this._log("Error ignored by pattern:", errorData.message);
+          }
+          return false;
+        }
+
         // サンプリング率に基づいてエラーをフィルタリング
         if (Math.random() > this.config.samplingSetting) {
           return false;
@@ -490,6 +512,69 @@
         environment: this.config.environment,
         meta: meta,
       };
+    },
+
+    /**
+     * エラーが除外パターンにマッチするかチェック
+     * @param {Object} errorData エラーデータ
+     * @private
+     * @return {Boolean} 除外すべきエラーの場合true
+     */
+    _shouldIgnoreError: function (errorData) {
+      var message = errorData.message || "";
+      var source = errorData.source || "";
+
+      // メッセージパターンのチェック
+      if (this.config.ignorePatterns && this.config.ignorePatterns.length > 0) {
+        for (var i = 0; i < this.config.ignorePatterns.length; i++) {
+          var pattern = this.config.ignorePatterns[i];
+          if (this._matchesPattern(message, pattern)) {
+            return true;
+          }
+        }
+      }
+
+      // URLパターンのチェック
+      if (this.config.ignoreUrls && this.config.ignoreUrls.length > 0) {
+        for (var j = 0; j < this.config.ignoreUrls.length; j++) {
+          var urlPattern = this.config.ignoreUrls[j];
+          if (this._matchesPattern(source, urlPattern)) {
+            return true;
+          }
+        }
+      }
+
+      return false;
+    },
+
+    /**
+     * 文字列がパターンにマッチするかチェック
+     * @param {String} str チェック対象の文字列
+     * @param {String|RegExp} pattern パターン（文字列または正規表現）
+     * @private
+     * @return {Boolean} マッチした場合true
+     */
+    _matchesPattern: function (str, pattern) {
+      if (!str || !pattern) {
+        return false;
+      }
+
+      try {
+        // 正規表現の場合
+        if (pattern instanceof RegExp) {
+          return pattern.test(str);
+        }
+
+        // 文字列の場合は部分一致
+        if (typeof pattern === "string") {
+          return str.indexOf(pattern) !== -1;
+        }
+      } catch (e) {
+        // パターンマッチングに失敗した場合は無視しない
+        return false;
+      }
+
+      return false;
     },
 
     /**

@@ -204,6 +204,124 @@ describe('ClientErrorCapture基本機能テスト', () => {
       expect(result.c.d).toBe(30);
     }
   });
+  
+  test('デフォルトでignorePatternsに必要なパターンが含まれている', () => {
+    ClientErrorCapture.init();
+    
+    expect(ClientErrorCapture.config.ignorePatterns).toBeDefined();
+    expect(Array.isArray(ClientErrorCapture.config.ignorePatterns)).toBe(true);
+    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(5);
+    expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error.");
+    expect(ClientErrorCapture.config.ignorePatterns).toContain("Script error");
+    expect(ClientErrorCapture.config.ignorePatterns).toContain("Non-Error promise rejection");
+  });
+  
+  test('デフォルトでignoreUrlsに必要なパターンが含まれている', () => {
+    ClientErrorCapture.init();
+    
+    expect(ClientErrorCapture.config.ignoreUrls).toBeDefined();
+    expect(Array.isArray(ClientErrorCapture.config.ignoreUrls)).toBe(true);
+    expect(ClientErrorCapture.config.ignoreUrls.length).toBe(4);
+    expect(ClientErrorCapture.config.ignoreUrls).toContain("chrome-extension://");
+    expect(ClientErrorCapture.config.ignoreUrls).toContain("moz-extension://");
+  });
+  
+  test('ignorePatternsをカスタマイズできる', () => {
+    ClientErrorCapture.init({
+      ignorePatterns: ["Script error.", "Custom error pattern", /ResizeObserver/]
+    });
+    
+    expect(ClientErrorCapture.config.ignorePatterns.length).toBe(3);
+    expect(ClientErrorCapture.config.ignorePatterns).toContain("Custom error pattern");
+  });
+  
+  test('ignoreUrlsを設定できる', () => {
+    ClientErrorCapture.init({
+      ignoreUrls: ["chrome-extension://", /facebook\.net/]
+    });
+    
+    expect(ClientErrorCapture.config.ignoreUrls).toBeDefined();
+    expect(Array.isArray(ClientErrorCapture.config.ignoreUrls)).toBe(true);
+    expect(ClientErrorCapture.config.ignoreUrls.length).toBe(2);
+  });
+});
+
+describe('エラー除外パターンテスト', () => {
+  let consoleLogOutput = [];
+  let originalConsoleLog;
+  let originalConsoleError;
+  
+  beforeEach(() => {
+    originalConsoleLog = console.log;
+    originalConsoleError = console.error;
+    consoleLogOutput = [];
+    
+    console.log = (...args) => {
+      consoleLogOutput.push(args);
+    };
+    console.error = (...args) => {};
+    
+    resetLibraryState();
+  });
+  
+  afterEach(() => {
+    console.log = originalConsoleLog;
+    console.error = originalConsoleError;
+  });
+  
+  test('_matchesPatternが文字列パターンで動作する', () => {
+    ClientErrorCapture.init({ logToConsole: false });
+    
+    // 部分一致
+    expect(ClientErrorCapture._matchesPattern("Script error.", "Script error")).toBe(true);
+    expect(ClientErrorCapture._matchesPattern("This is a Script error. message", "Script error.")).toBe(true);
+    expect(ClientErrorCapture._matchesPattern("No match here", "Script error")).toBe(false);
+  });
+  
+  test('_matchesPatternが正規表現パターンで動作する', () => {
+    ClientErrorCapture.init({ logToConsole: false });
+    
+    expect(ClientErrorCapture._matchesPattern("ResizeObserver loop limit exceeded", /ResizeObserver/)).toBe(true);
+    expect(ClientErrorCapture._matchesPattern("Loading chunk 5 failed", /Loading chunk \d+ failed/)).toBe(true);
+    expect(ClientErrorCapture._matchesPattern("Normal error", /ResizeObserver/)).toBe(false);
+  });
+  
+  test('_shouldIgnoreErrorがignorePatternsでエラーを除外する', () => {
+    ClientErrorCapture.init({
+      logToConsole: false,
+      ignorePatterns: ["Script error.", /ResizeObserver/]
+    });
+    
+    // 除外されるべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "Script error." })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "ResizeObserver loop limit exceeded" })).toBe(true);
+    
+    // 除外されないべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ message: "TypeError: undefined is not a function" })).toBe(false);
+  });
+  
+  test('_shouldIgnoreErrorがignoreUrlsでエラーを除外する', () => {
+    ClientErrorCapture.init({
+      logToConsole: false,
+      ignoreUrls: ["chrome-extension://", /googletagmanager\.com/]
+    });
+    
+    // 除外されるべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ 
+      message: "Some error", 
+      source: "chrome-extension://abc123/content.js" 
+    })).toBe(true);
+    expect(ClientErrorCapture._shouldIgnoreError({ 
+      message: "Some error", 
+      source: "https://www.googletagmanager.com/gtm.js" 
+    })).toBe(true);
+    
+    // 除外されないべきエラー
+    expect(ClientErrorCapture._shouldIgnoreError({ 
+      message: "Some error", 
+      source: "https://example.com/app.js" 
+    })).toBe(false);
+  });
 });
 
 describe('サーバー連携テスト', () => {

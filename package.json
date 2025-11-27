@@ -6,6 +6,7 @@
   "module": "js/client-error-capture.js",
   "types": "js/client-error-capture.d.ts",
   "scripts": {
+    "dev": "bunx live-server ./",
     "test": "bun test test/simple.test.js test/extended.test.js",
     "test:simple": "bun test test/simple.test.js",
     "test:extended": "bun test test/extended.test.js",
