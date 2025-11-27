@@ -1,7 +1,7 @@
 /**
  * @file client-error-capture.js
  * @description Webフロントエンド専用の未キャッチエラーを捕捉し、ログサーバーに送信するためのライブラリ
- * @version 1.0.0
+ * @version 1.4.0
  * @license MIT
  */
 

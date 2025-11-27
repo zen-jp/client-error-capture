@@ -1,6 +1,6 @@
 {
   "name": "client-error-capture",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Browser error capture and reporting library",
   "main": "js/client-error-capture.js",
   "module": "js/client-error-capture.js",
